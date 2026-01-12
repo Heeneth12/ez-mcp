@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { GoogleGenerativeAI, Content } from "@google/generative-ai"; // Import Content type
+import { GoogleGenerativeAI, Content } from "@google/generative-ai";
 import { getGeminiTools, executeTool } from "./ai/toolRegistry";
 import dotenv from "dotenv";
 import axios from "axios";
@@ -12,7 +12,7 @@ app.use(express.json());
 
 const port = process.env.PORT || 8085;
 const apiKey = process.env.GEMINI_API_KEY;
-const JAVA_BACKEND_URL = "http://localhost:8085/v1/mcp/chat"; 
+const devUrl = process.env.SERVER_URL + "/v1/mcp/chat";
 
 if (!apiKey) throw new Error("GEMINI_API_KEY required");
 
@@ -24,7 +24,7 @@ async function getChatHistory(conversationId: number, token: string): Promise<Co
     if (!conversationId) return [];
     
     try {
-        const response = await axios.get(`${JAVA_BACKEND_URL}/${conversationId}/messages`, {
+        const response = await axios.get(`${devUrl}/${conversationId}/messages`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const messages = response.data.data || [];
@@ -42,7 +42,11 @@ app.post("/v1/ai/generate", async (req, res) => {
     try {
         const { message, conversationId } = req.body;
         const authHeader = req.headers.authorization;
-        const token = authHeader?.split(" ")[1] || "";
+        
+        if (!authHeader) {
+            return res.status(401).json({ reply: "Unauthorized" });
+        }
+        const token = authHeader.split(" ")[1];
 
         if (!message) return res.status(400).json({ reply: "Message required." });
 
@@ -86,5 +90,5 @@ app.post("/v1/ai/generate", async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`🚀 MCP Worker running at http://localhost:${port}`);
+    console.log(`🚀 MCP Worker running`);
 });
