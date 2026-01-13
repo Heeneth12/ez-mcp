@@ -10,6 +10,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// cors options
+const corsOptions = {
+    origin: 'https://ez-inventory.onrender.com',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions));
+
 const port = process.env.PORT || 8085;
 const apiKey = process.env.GEMINI_API_KEY;
 const devUrl = process.env.SERVER_URL + "/v1/mcp/chat";
@@ -37,6 +45,14 @@ async function getChatHistory(conversationId: number, token: string): Promise<Co
         return [];
     }
 }
+
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "UP",
+        service: "mcp-ai-worker",
+        timestamp: new Date().toISOString()
+    });
+});
 
 app.post("/v1/ai/generate", async (req, res) => {
     try {
