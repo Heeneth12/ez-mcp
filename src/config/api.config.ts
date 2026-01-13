@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const API_CONFIG = {
-    BASE_URL: "http://localhost:8085", // Your Real Backend URL
+    BASE_URL: process.env.SERVER_URL || "http://localhost:8085",
     TIMEOUT: 5000
 };
 
